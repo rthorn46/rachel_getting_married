@@ -9,6 +9,7 @@
     input, button { padding: 10px; margin: 10px; font-size: 16px; }
     .hidden { display: none; }
     form { margin-top: 20px; }
+    .person-block { border: 1px solid #ccc; margin: 20px; padding: 20px; border-radius: 10px; }
   </style>
 </head>
 <body>
@@ -22,25 +23,7 @@
 </div>
 
 <form id="rsvpForm" class="hidden" onsubmit="submitRSVP(event)">
-  <div id="nameDisplay"></div>
-
-  <div id="rehearsalSection" class="hidden">
-    <p>Will you attend the Rehearsal Dinner?</p>
-    <label><input type="radio" name="attending_rehearsal" value="true"> Yes</label>
-    <label><input type="radio" name="attending_rehearsal" value="false"> No</label>
-  </div>
-
-  <div id="weddingSection" class="hidden">
-    <p>Will you attend the Wedding?</p>
-    <label><input type="radio" name="attending_wedding" value="true"> Yes</label>
-    <label><input type="radio" name="attending_wedding" value="false"> No</label>
-  </div>
-
-  <div id="plusOneSection" class="hidden">
-    <p>Plus One Name:</p>
-    <input type="text" id="plusOneName" placeholder="Full Name">
-  </div>
-
+  <div id="personList"></div>
   <button type="submit">Submit RSVP</button>
 </form>
 
@@ -53,6 +36,7 @@
 const supabaseUrl = 'https://wftugsoynahkvuwjyzok.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmdHVnc295bmFoa3Z1d2p5em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4MDcwNzksImV4cCI6MjA2MTM4MzA3OX0._8lsuDcxHJibDnjh5Zn4RCHDQ4cKCn7OvEDBtidJ8D0';
 const tableName = 'invites';
+let currentInvites = [];
 
 async function lookupInvite() {
   const code = document.getElementById('inviteCode').value.trim().toLowerCase();
@@ -67,7 +51,6 @@ async function lookupInvite() {
         'Accept': 'application/json'
       }
     });
-    console.log('Response status:', response.status);
     const data = await response.json();
     console.log('Fetched data:', data);
 
@@ -76,33 +59,38 @@ async function lookupInvite() {
       return;
     }
 
-    const invite = data[0];
-
+    currentInvites = data;
     document.getElementById('lookup').classList.add('hidden');
     document.getElementById('rsvpForm').classList.remove('hidden');
 
-    document.getElementById('nameDisplay').innerHTML = `<h2>Hello, ${invite.name}!</h2>`;
+    const personList = document.getElementById('personList');
+    personList.innerHTML = '';
 
-    if (invite.rehearsal_invite) {
-      document.getElementById('rehearsalSection').classList.remove('hidden');
-      if (invite.attending_rehearsal !== null) {
-        document.querySelector(`input[name="attending_rehearsal"][value="${invite.attending_rehearsal}"]`).checked = true;
-      }
-    }
-    if (invite.wedding_invite) {
-      document.getElementById('weddingSection').classList.remove('hidden');
-      if (invite.attending_wedding !== null) {
-        document.querySelector(`input[name="attending_wedding"][value="${invite.attending_wedding}"]`).checked = true;
-      }
-    }
-    if (invite.has_plus_one) {
-      document.getElementById('plusOneSection').classList.remove('hidden');
-      if (invite.plus_one_name) {
-        document.getElementById('plusOneName').value = invite.plus_one_name;
-      }
-    }
+    currentInvites.forEach((invite, index) => {
+      const block = document.createElement('div');
+      block.className = 'person-block';
 
-    window.currentInvite = invite; // Save for later
+      block.innerHTML = `
+        <h3>${invite.name}</h3>
+        ${invite.rehearsal_invite ? `
+          <p>Rehearsal Dinner:</p>
+          <label><input type="radio" name="rehearsal_${index}" value="true" ${invite.attending_rehearsal === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="rehearsal_${index}" value="false" ${invite.attending_rehearsal === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.wedding_invite ? `
+          <p>Wedding:</p>
+          <label><input type="radio" name="wedding_${index}" value="true" ${invite.attending_wedding === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="wedding_${index}" value="false" ${invite.attending_wedding === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.has_plus_one ? `
+          <p>Plus One Name:</p>
+          <input type="text" id="plusOne_${index}" value="${invite.plus_one_name || ''}" placeholder="Full Name">
+        ` : ''}
+      `;
+
+      personList.appendChild(block);
+    });
+
   } catch (error) {
     console.error('Lookup error:', error);
     alert('Error looking up invite.');
@@ -112,38 +100,43 @@ async function lookupInvite() {
 async function submitRSVP(event) {
   event.preventDefault();
 
-  const rehearsalAnswer = document.querySelector('input[name="attending_rehearsal"]:checked')?.value;
-  const weddingAnswer = document.querySelector('input[name="attending_wedding"]:checked')?.value;
-  const plusOneName = document.getElementById('plusOneName').value.trim();
-
-  const updates = {
-    attending_rehearsal: rehearsalAnswer === 'true' ? true : (rehearsalAnswer === 'false' ? false : null),
-    attending_wedding: weddingAnswer === 'true' ? true : (weddingAnswer === 'false' ? false : null),
-    plus_one_name: plusOneName || null
-  };
-
-  console.log('Submitting updates:', updates);
-
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}?id=eq.${window.currentInvite.id}`, {
-      method: 'PATCH',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Prefer': 'return=representation'
-      },
-      body: JSON.stringify(updates)
-    });
-    console.log('Submit response status:', response.status);
-    const result = await response.json();
-    console.log('Submit result:', result);
+    for (let i = 0; i < currentInvites.length; i++) {
+      const invite = currentInvites[i];
 
-    if (response.status >= 400) {
-      console.error('RSVP Error:', result);
-      alert('Something went wrong!');
-      return;
+      const updates = {
+        attending_rehearsal: null,
+        attending_wedding: null,
+        plus_one_name: null
+      };
+
+      if (invite.rehearsal_invite) {
+        const rehearsalAnswer = document.querySelector(`input[name="rehearsal_${i}"]:checked`)?.value;
+        updates.attending_rehearsal = rehearsalAnswer === 'true' ? true : (rehearsalAnswer === 'false' ? false : null);
+      }
+
+      if (invite.wedding_invite) {
+        const weddingAnswer = document.querySelector(`input[name="wedding_${i}"]:checked`)?.value;
+        updates.attending_wedding = weddingAnswer === 'true' ? true : (weddingAnswer === 'false' ? false : null);
+      }
+
+      if (invite.has_plus_one) {
+        updates.plus_one_name = document.getElementById(`plusOne_${i}`).value.trim() || null;
+      }
+
+      console.log('Submitting updates for', invite.name, updates);
+
+      await fetch(`${supabaseUrl}/rest/v1/${tableName}?id=eq.${invite.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updates)
+      });
     }
 
     document.getElementById('rsvpForm').classList.add('hidden');
