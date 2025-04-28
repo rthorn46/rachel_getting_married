@@ -36,7 +36,7 @@ async function lookupInvite() {
   const code = document.getElementById('inviteCode').value.trim().toLowerCase();
 
   try {
-    const response1 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=eq.${encodeURIComponent(code)}`, {
+    const response1 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=ilike.${encodeURIComponent(code)}`, {
       headers: {
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
