@@ -26,6 +26,12 @@
   <button onclick="editRSVP()">Edit RSVP</button>
 </div>
 
+<div id="notFoundMessage" class="hidden form-card">
+  <h2>We couldn't find your invitation.</h2>
+  <p>Please reach out to Cameron or Rachel!</p>
+  <button onclick="restartLookup()">Try Again</button>
+</div>
+
 <script>
 const supabaseUrl = 'https://wftugsoynahkvuwjyzok.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmdHVnc295bmFoa3Z1d2p5em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4MDcwNzksImV4cCI6MjA2MTM4MzA3OX0._8lsuDcxHJibDnjh5Zn4RCHDQ4cKCn7OvEDBtidJ8D0';
@@ -47,7 +53,8 @@ async function lookupInvite() {
     const initialData = await response1.json();
 
     if (!initialData || initialData.length === 0) {
-      alert('Invite not found.');
+      document.getElementById('lookup').classList.add('hidden');
+      document.getElementById('notFoundMessage').classList.remove('hidden');
       return;
     }
 
@@ -154,6 +161,12 @@ async function submitRSVP(event) {
 function editRSVP() {
   document.getElementById('successMessage').classList.add('hidden');
   document.getElementById('rsvpForm').classList.remove('hidden');
+}
+
+function restartLookup() {
+  document.getElementById('notFoundMessage').classList.add('hidden');
+  document.getElementById('lookup').classList.remove('hidden');
+  document.getElementById('inviteCode').value = '';
 }
 </script>
 
