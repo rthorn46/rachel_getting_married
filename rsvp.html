@@ -10,18 +10,18 @@
 
 <h1>RSVP</h1>
 
-<div id="lookup">
+<div id="lookup" class="form-card">
   <p>Enter your invite code:</p>
   <input type="text" id="inviteCode" placeholder="Invite Code">
   <button onclick="lookupInvite()">Find Invite</button>
 </div>
 
-<form id="rsvpForm" class="hidden" onsubmit="submitRSVP(event)">
+<form id="rsvpForm" class="hidden form-card" onsubmit="submitRSVP(event)">
   <div id="personList"></div>
   <button type="submit">Submit RSVP</button>
 </form>
 
-<div id="successMessage" class="hidden">
+<div id="successMessage" class="hidden form-card">
   <h2>Thank you for RSVPing!</h2>
   <button onclick="editRSVP()">Edit RSVP</button>
 </div>
@@ -34,7 +34,6 @@ let currentInvites = [];
 
 async function lookupInvite() {
   const code = document.getElementById('inviteCode').value.trim().toLowerCase();
-  console.log('Looking up invite with code:', code);
 
   try {
     const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=eq.${encodeURIComponent(code)}`, {
@@ -46,7 +45,6 @@ async function lookupInvite() {
       }
     });
     const data = await response.json();
-    console.log('Fetched data:', data);
 
     if (!data || data.length === 0) {
       alert('Invite not found.');
@@ -77,8 +75,10 @@ async function lookupInvite() {
           <label><input type="radio" name="wedding_${index}" value="false" ${invite.attending_wedding === false ? 'checked' : ''}> No</label>
         ` : ''}
         ${invite.has_plus_one ? `
-          <p>Plus One Name:</p>
-          <input type="text" id="plusOne_${index}" value="${invite.plus_one_name || ''}" placeholder="Full Name">
+          <div class="plus-one-wrapper">
+            <p>Plus One Name:</p>
+            <input type="text" id="plusOne_${index}" class="plus-one" value="${invite.plus_one_name || ''}" placeholder="Full Name">
+          </div>
         ` : ''}
       `;
 
@@ -117,8 +117,6 @@ async function submitRSVP(event) {
       if (invite.has_plus_one) {
         updates.plus_one_name = document.getElementById(`plusOne_${i}`).value.trim() || null;
       }
-
-      console.log('Submitting updates for', invite.name, updates);
 
       await fetch(`${supabaseUrl}/rest/v1/${tableName}?id=eq.${invite.id}`, {
         method: 'PATCH',
