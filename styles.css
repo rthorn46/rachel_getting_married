@@ -77,3 +77,8 @@ input.plus-one {
   max-width: 90%;
   margin: 0 auto;
 }
+
+input.invite-code {
+  width: 250px;
+  max-width: 90%;
+}
