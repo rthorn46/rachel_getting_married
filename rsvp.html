@@ -12,7 +12,7 @@
 
 <div id="lookup" class="form-card">
   <p>Enter your invite code:</p>
-  <input type="text" id="inviteCode" placeholder="Invite Code" class="invite-code">
+  <input type="text" id="inviteCode" class="invite-code" placeholder="Invite Code">
   <button onclick="lookupInvite()">Find Invite</button>
 </div>
 
@@ -36,7 +36,7 @@ async function lookupInvite() {
   const code = document.getElementById('inviteCode').value.trim().toLowerCase();
 
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=eq.${encodeURIComponent(code)}`, {
+    const response1 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=eq.${encodeURIComponent(code)}`, {
       headers: {
         'apikey': supabaseKey,
         'Authorization': `Bearer ${supabaseKey}`,
@@ -44,14 +44,26 @@ async function lookupInvite() {
         'Accept': 'application/json'
       }
     });
-    const data = await response.json();
+    const initialData = await response1.json();
 
-    if (!data || data.length === 0) {
+    if (!initialData || initialData.length === 0) {
       alert('Invite not found.');
       return;
     }
 
-    currentInvites = data;
+    const matchedPerson = initialData[0];
+
+    const response2 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&group_code=eq.${encodeURIComponent(matchedPerson.group_code)}`, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    const groupData = await response2.json();
+
+    currentInvites = groupData;
     document.getElementById('lookup').classList.add('hidden');
     document.getElementById('rsvpForm').classList.remove('hidden');
 
