@@ -59,16 +59,21 @@ async function lookupInvite() {
     }
 
     const matchedPerson = initialData[0];
+    let groupData = [];
 
-    const response2 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&group_code=eq.${encodeURIComponent(matchedPerson.group_code)}`, {
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-    const groupData = await response2.json();
+    if (matchedPerson.group_code) {
+      const response2 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&group_code=eq.${encodeURIComponent(matchedPerson.group_code)}`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      groupData = await response2.json();
+    } else {
+      groupData = [matchedPerson];
+    }
 
     currentInvites = groupData;
     document.getElementById('lookup').classList.add('hidden');
