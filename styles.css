@@ -208,7 +208,11 @@ input.invite-code {
 }
 
 .title {
-  padding: 5rem 0 0 0; }
+  padding: 2rem 0 0 0; }
+  @media only screen and (min-width: 500px) {
+    .title {
+      padding: 5rem 0 0 0; }
+  }
 
 .title-content {
   max-width: 100%;
