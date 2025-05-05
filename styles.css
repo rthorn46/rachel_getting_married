@@ -3,7 +3,10 @@ body {
   background-color: #f7f3ed;
   color: #4a3728;
   text-align: center;
-  padding: 40px;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 input, button {
@@ -35,9 +38,9 @@ form {
 
 .form-card {
   background: white;
-  padding: 30px;
+  padding: 16px 24px 32px;
   max-width: 600px;
-  margin: 20px auto;
+  margin: 8rem auto;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   text-align: left;
@@ -80,4 +83,198 @@ input.plus-one {
 input.invite-code {
   width: 250px;
   max-width: 90%;
+}
+
+
+.nav {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto; }
+  @media only screen and (min-width: 500px) {
+    .nav {
+      top: 0;
+      bottom: auto;
+    }
+  }
+
+.nav-top {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  top: 0; }
+
+.nav-content {
+  width: 100%;
+  position: relative;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.nav-lanterns {
+  position: absolute;
+  display: none;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+@media only screen and (min-width: 500px) {
+  .nav-lanterns{
+    display: block;
+  }
+}
+
+.nav-lanterns img {
+  width: 100%;
+}
+
+.lantern-left, .lantern-right {
+  position: absolute;
+  width: 100px;
+}
+
+.lantern-left {
+  left: 2rem;
+}
+
+.lantern-right {
+  right: 2rem;
+}
+
+.nav-links {
+  display: flex;
+  max-width: 375px;
+  width: 100%;
+  padding: 1rem 1rem;
+  margin: auto;
+  justify-content: space-evenly; }
+  @media only screen and (min-width: 500px) {
+      .nav-links {
+        justify-content: center;
+      }
+    }
+
+.link-item {
+  padding: 1rem 0.5rem;
+  flex: 1;
+  width: 100%;
+  height: 24px; }
+  @media only screen and (min-width: 500px) {
+    .link-item {
+      padding: 0.5rem 1.25rem;
+      height: 28px;
+    }
+  }
+
+.nav-links a:hover {
+  opacity: 50%;
+}
+
+.nav-bg {
+  display: block;
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 250px;
+  background: linear-gradient(180deg, rgba(253, 240, 221, 0.00) 0%, rgba(253, 240, 221, 0.90) 73.41%);
+}
+@media only screen and (min-width: 500px) {
+  .nav-bg {
+    display: none;
+  }
+}
+
+
+.link-item img {
+  height: 100%;
+  width: auto;
+}
+
+.body {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.title {
+  padding: 2rem 0 0 0; }
+  @media only screen and (min-width: 500px) {
+    .title {
+      padding: 5rem 0 0 0; }
+  }
+
+.title-content {
+  max-width: 100%;
+  margin: 0 1rem;
+  display: flex;
+  flex-direction: column }
+  @media only screen and (min-width: 500px) {
+    .title-content {
+      max-width: 75%;
+      margin: 0 auto;
+    }
+  }
+
+.title-image, .title-details {
+  margin: 0.5rem auto; }
+  @media only screen and (min-width: 500px) {
+    .title-image, .title-details {
+      margin: 1rem auto;
+    }
+  }
+
+.title-image {
+  max-width: 100%;
+  display: block;
+}
+
+.title-image img {
+  width: 100%;
+}
+
+.title-details {
+  height: 40px;
+}
+
+.title-details img {
+  width: auto;
+  height: 100%;
+}
+
+.asset {
+  height: 70vh;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -10vh;
+  overflow: hidden; }
+  @media only screen and (min-width: 500px) {
+    .asset {
+      height: 65vh;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -15vh;
+      overflow: hidden;
+    }
+  }
+
+.asset-item {
+  height: 100%;
+}
+
+.asset-item img {
+  width: auto;
+  height: 100%;
 }
