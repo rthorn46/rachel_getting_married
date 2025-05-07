@@ -9,6 +9,12 @@ body {
   overflow: hidden;
 }
 
+body.about-page {
+  height: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 input, button {
   padding: 10px;
   margin: 10px;
