@@ -1,52 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RSVP - Rachel & Cameron</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="about-page">
 
-  <div class="nav-top">
-    <div class="nav-content">
-      <div class="nav-lanterns desktop-show">
-        <a href="index.html" class="lantern-left">
-          <img src="assets/lanternleft.png" alt="Chinese Lantern">
-        </a>
-        <a href="index.html" class="lantern-right">
-          <img src="assets/lanternright.png" alt="Chinese Lantern">
-        </a>
-      </div>
-      <div class="nav-links">
-        <!-- about -->
-          <a href="about.html" class="link-item link-hover">
-            <img src="assets/about.png" alt="About">
-            <span class="hidden">About</span>
-          </a>
-
-        <!-- FAQ -->
-          <a href="faq.html" class="link-item link-hover">
-            <img src="assets/faq.png" alt="FAQ">
-            <span class="hidden">FAQ</span>
-          </a>
-
-        <!-- Registry -->
-          <a href="registry.html" class="link-item link-hover">
-            <img src="assets/registry.png" alt="Registry">
-            <span class="hidden">Registry</span>
-          </a>
-
-        <!-- RSVP -->
-          <a href="rsvp.html" class="link-item link-hover">
-            <img src="assets/rvp.png" alt="RSVP">
-            <span class="hidden">RVSP</span>
-          </a>
-      </div>
+<div class="nav-top">
+  <div class="nav-content">
+    <div class="nav-lanterns desktop-show">
+      <a href="index.html" class="lantern-left">
+        <img src="assets/lanternleft.png" alt="Chinese Lantern">
+      </a>
+      <a href="index.html" class="lantern-right">
+        <img src="assets/lanternright.png" alt="Chinese Lantern">
+      </a>
     </div>
-    <div class="nav-bg"></div>
+    <div class="nav-links">
+      <a href="about.html" class="link-item link-hover">
+        <img src="assets/about.png" alt="About">
+        <span class="hidden">About</span>
+      </a>
+      <a href="faq.html" class="link-item link-hover">
+        <img src="assets/faq.png" alt="FAQ">
+        <span class="hidden">FAQ</span>
+      </a>
+      <a href="registry.html" class="link-item link-hover">
+        <img src="assets/registry.png" alt="Registry">
+        <span class="hidden">Registry</span>
+      </a>
+      <a href="rsvp.html" class="link-item link-hover">
+        <img src="assets/rvp.png" alt="RSVP">
+        <span class="hidden">RSVP</span>
+      </a>
+    </div>
   </div>
-
+  <div class="nav-bg"></div>
+</div>
 
 <div id="lookup" class="form-card">
   <h1>RSVP</h1>
@@ -79,7 +71,6 @@ let currentInvites = [];
 
 async function lookupInvite() {
   const code = document.getElementById('inviteCode').value.trim().toLowerCase();
-
   try {
     const response1 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=ilike.${encodeURIComponent(code)}`, {
       headers: {
@@ -148,8 +139,11 @@ async function lookupInvite() {
             <input type="text" id="plusOne_${index}" class="plus-one" value="${invite.plus_one_name || ''}" placeholder="Full Name">
           </div>
         ` : ''}
+        <div class="dietary-wrapper">
+          <p>Dietary Restrictions:</p>
+          <input type="text" id="dietary_${index}" class="dietary-input" value="${invite.dietary_restrictions || ''}" placeholder="e.g. vegetarian, gluten-free">
+        </div>
       `;
-
       personList.appendChild(block);
     });
 
@@ -161,16 +155,15 @@ async function lookupInvite() {
 
 async function submitRSVP(event) {
   event.preventDefault();
-
   try {
     for (let i = 0; i < currentInvites.length; i++) {
       const invite = currentInvites[i];
-
       const updates = {
         attending_rehearsal: null,
         attending_wedding: null,
         attending_after_party: null,
-        plus_one_name: null
+        plus_one_name: null,
+        dietary_restrictions: null
       };
 
       if (invite.rehearsal_invite) {
@@ -189,8 +182,10 @@ async function submitRSVP(event) {
       }
 
       if (invite.has_plus_one) {
-        updates.plus_one_name = document.getElementById(`plusOne_${i}`).value.trim() || null;
+        updates.plus_one_name = document.getElementById(`plusOne_${i}`)?.value.trim() || null;
       }
+
+      updates.dietary_restrictions = document.getElementById(`dietary_${i}`)?.value.trim() || null;
 
       await fetch(`${supabaseUrl}/rest/v1/${tableName}?id=eq.${invite.id}`, {
         method: 'PATCH',
