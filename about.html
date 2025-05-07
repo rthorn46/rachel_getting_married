@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Info - Rachel & Cameron</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="nav-top">
+    <div class="nav-content">
+      <div class="nav-lanterns desktop-show">
+        <a href="index.html" class="lantern-left">
+          <img src="assets/lanternleft.png" alt="Chinese Lantern">
+        </a>
+        <a href="index.html" class="lantern-right">
+          <img src="assets/lanternright.png" alt="Chinese Lantern">
+        </a>
+      </div>
+      <div class="nav-links">
+        <a href="about.html" class="link-item link-hover">
+          <img src="assets/about.png" alt="About">
+          <span class="hidden">About</span>
+        </a>
+        <a href="faq.html" class="link-item link-hover">
+          <img src="assets/faq.png" alt="FAQ">
+          <span class="hidden">FAQ</span>
+        </a>
+        <a href="registry.html" class="link-item link-hover">
+          <img src="assets/registry.png" alt="Registry">
+          <span class="hidden">Registry</span>
+        </a>
+        <a href="rsvp.html" class="link-item link-hover">
+          <img src="assets/rvp.png" alt="RSVP">
+          <span class="hidden">RSVP</span>
+        </a>
+      </div>
+    </div>
+    <div class="nav-bg"></div>
+  </div>
+
+
+<div id="lookup" class="form-card">
+  <h1>Event Details</h1>
+  <p>Enter your first and last name:</p>
+  <input type="text" id="inviteCode" class="invite-code">
+  <button onclick="lookupDetails()">See Events</button>
+</div>
+
+<div id="infoCards" class="hidden form-card"></div>
+
+<div id="notFoundMessage" class="hidden form-card">
+  <h2>We couldn't find your invitation.</h2>
+  <p>Please reach out to Cameron or Rachel!</p>
+  <button onclick="restartLookup()">Try Again</button>
+</div>
+
+<script>
+const supabaseUrl = 'https://wftugsoynahkvuwjyzok.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmdHVnc295bmFoa3Z1d2p5em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4MDcwNzksImV4cCI6MjA2MTM4MzA3OX0._8lsuDcxHJibDnjh5Zn4RCHDQ4cKCn7OvEDBtidJ8D0'; // truncated
+const tableName = 'invites';
+
+async function lookupDetails() {
+  const code = document.getElementById('inviteCode').value.trim().toLowerCase();
+
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=ilike.${encodeURIComponent(code)}`, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    const data = await response.json();
+
+    if (!data || data.length === 0) {
+      document.getElementById('lookup').classList.add('hidden');
+      document.getElementById('notFoundMessage').classList.remove('hidden');
+      return;
+    }
+
+    const person = data[0];
+    const container = document.getElementById('infoCards');
+    container.innerHTML = '';
+    document.getElementById('lookup').classList.add('hidden');
+    container.classList.remove('hidden');
+
+    if (person.rehearsal_invite) {
+      container.innerHTML += `
+        <div class="person-block">
+          <h3>Welcome Party</h3>
+          <p><strong>Pete’s Candy Store</strong><br>709 Lorimer St, Brooklyn<br>Friday, November 7, 2025<br>5:30 PM</p>
+          <p>Out of towners and close friends and family are invited to enjoy drinks, catering from Los Tacos No. 1, and surprise entertainment (live music? karaoke??).</p>
+        </div>`;
+    }
+
+    if (person.wedding_invite) {
+      container.innerHTML += `
+        <div class="person-block">
+          <h3>Ceremony and Reception</h3>
+          <p><strong>House of Joy</strong><br>28 Pell St, New York<br>Saturday, November 8, 2025<br>5:00 PM</p>
+          <p>Cocktail hour will start at 5 with the ceremony beginning at 5:30. Dinner will feature many of our favorite Chinese classics including dim sum, Peking duck and more. After, the Witus Wonders will play a smattering of hits and DJ Dusty will pump out the jams.</p>
+        </div>`;
+    }
+
+    if (person.after_party_invite) {
+      container.innerHTML += `
+        <div class="person-block">
+          <h3>After Party</h3>
+          <p><strong>Night Club 101</strong><br>101 Avenue A, New York<br>Saturday, November 8, 2025<br>11:00 PM</p>
+          <p>Dancing and festivities will continue in the basement of Night Club 101 in the heart of the East Village!</p>
+        </div>`;
+    }
+  } catch (error) {
+    console.error('Lookup error:', error);
+    alert('Error looking up invite.');
+  }
+}
+
+function restartLookup() {
+  document.getElementById('notFoundMessage').classList.add('hidden');
+  document.getElementById('lookup').classList.remove('hidden');
+  document.getElementById('inviteCode').value = '';
+}
+</script>
+
+</body>
+</html>
