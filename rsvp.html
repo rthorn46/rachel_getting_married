@@ -128,7 +128,7 @@ async function lookupInvite() {
       block.innerHTML = `
         <h3>${invite.name}</h3>
         ${invite.rehearsal_invite ? `
-          <p>Rehearsal Dinner:</p>
+          <p>Welcome Party:</p>
           <label><input type="radio" name="rehearsal_${index}" value="true" ${invite.attending_rehearsal === true ? 'checked' : ''}> Yes</label>
           <label><input type="radio" name="rehearsal_${index}" value="false" ${invite.attending_rehearsal === false ? 'checked' : ''}> No</label>
         ` : ''}
@@ -136,6 +136,11 @@ async function lookupInvite() {
           <p>Wedding:</p>
           <label><input type="radio" name="wedding_${index}" value="true" ${invite.attending_wedding === true ? 'checked' : ''}> Yes</label>
           <label><input type="radio" name="wedding_${index}" value="false" ${invite.attending_wedding === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.after_party_invite ? `
+          <p>After Party:</p>
+          <label><input type="radio" name="after_${index}" value="true" ${invite.attending_after_party === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="after_${index}" value="false" ${invite.attending_after_party === false ? 'checked' : ''}> No</label>
         ` : ''}
         ${invite.has_plus_one ? `
           <div class="plus-one-wrapper">
@@ -164,6 +169,7 @@ async function submitRSVP(event) {
       const updates = {
         attending_rehearsal: null,
         attending_wedding: null,
+        attending_after_party: null,
         plus_one_name: null
       };
 
@@ -175,6 +181,11 @@ async function submitRSVP(event) {
       if (invite.wedding_invite) {
         const weddingAnswer = document.querySelector(`input[name="wedding_${i}"]:checked`)?.value;
         updates.attending_wedding = weddingAnswer === 'true' ? true : (weddingAnswer === 'false' ? false : null);
+      }
+
+      if (invite.after_party_invite) {
+        const afterAnswer = document.querySelector(`input[name="after_${i}"]:checked`)?.value;
+        updates.attending_after_party = afterAnswer === 'true' ? true : (afterAnswer === 'false' ? false : null);
       }
 
       if (invite.has_plus_one) {
