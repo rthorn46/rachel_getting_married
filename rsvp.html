@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registry - Rachel & Cameron</title>
+  <title>RSVP - Rachel & Cameron</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="registry-page">
+<body class="about-page">
 
   <div class="nav-top">
     <div class="nav-content">
@@ -19,32 +19,211 @@
         </a>
       </div>
       <div class="nav-links">
-        <a href="about.html" class="link-item link-hover">
-          <img src="assets/about.png" alt="About">
-          <span class="hidden">About</span>
-        </a>
-        <a href="faq.html" class="link-item link-hover">
-          <img src="assets/faq.png" alt="FAQ">
-          <span class="hidden">FAQ</span>
-        </a>
-        <a href="registry.html" class="link-item link-hover">
-          <img src="assets/registry.png" alt="Registry">
-          <span class="hidden">Registry</span>
-        </a>
-        <a href="rsvp.html" class="link-item link-hover">
-          <img src="assets/rvp.png" alt="RSVP">
-          <span class="hidden">RSVP</span>
-        </a>
+        <!-- about -->
+          <a href="about.html" class="link-item link-hover">
+            <img src="assets/about.png" alt="About">
+            <span class="hidden">About</span>
+          </a>
+
+        <!-- FAQ -->
+          <a href="faq.html" class="link-item link-hover">
+            <img src="assets/faq.png" alt="FAQ">
+            <span class="hidden">FAQ</span>
+          </a>
+
+        <!-- Registry -->
+          <a href="registry.html" class="link-item link-hover">
+            <img src="assets/registry.png" alt="Registry">
+            <span class="hidden">Registry</span>
+          </a>
+
+        <!-- RSVP -->
+          <a href="rsvp.html" class="link-item link-hover">
+            <img src="assets/rvp.png" alt="RSVP">
+            <span class="hidden">RVSP</span>
+          </a>
       </div>
     </div>
     <div class="nav-bg"></div>
   </div>
 
-  <div class="form-card">
-    <h1 style="margin-bottom: 2rem;">Registry</h1>
-    <p>You can view our full registry at the link below:</p>
-    <p><a href="https://www.zola.com/registry/witusjordanwedding?preview=true" target="_blank" rel="noopener noreferrer">Visit our Zola Registry</a></p>
-  </div>
+
+<div id="lookup" class="form-card">
+  <h1>RSVP</h1>
+  <p>Enter your first and last name:</p>
+  <input type="text" id="inviteCode" class="invite-code">
+  <button onclick="lookupInvite()">Find Invite</button>
+</div>
+
+<form id="rsvpForm" class="hidden form-card" onsubmit="submitRSVP(event)">
+  <div id="personList"></div>
+  <button type="submit">Submit RSVP</button>
+</form>
+
+<div id="successMessage" class="hidden form-card">
+  <h2>Thank you for RSVPing!</h2>
+  <button onclick="editRSVP()">Edit RSVP</button>
+</div>
+
+<div id="notFoundMessage" class="hidden form-card">
+  <h2>We couldn't find your invitation.</h2>
+  <p>Please reach out to Cameron or Rachel!</p>
+  <button onclick="restartLookup()">Try Again</button>
+</div>
+
+<script>
+const supabaseUrl = 'https://wftugsoynahkvuwjyzok.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndmdHVnc295bmFoa3Z1d2p5em9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU4MDcwNzksImV4cCI6MjA2MTM4MzA3OX0._8lsuDcxHJibDnjh5Zn4RCHDQ4cKCn7OvEDBtidJ8D0';
+const tableName = 'invites';
+let currentInvites = [];
+
+async function lookupInvite() {
+  const code = document.getElementById('inviteCode').value.trim().toLowerCase();
+
+  try {
+    const response1 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&code=ilike.${encodeURIComponent(code)}`, {
+      headers: {
+        'apikey': supabaseKey,
+        'Authorization': `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+    const initialData = await response1.json();
+
+    if (!initialData || initialData.length === 0) {
+      document.getElementById('lookup').classList.add('hidden');
+      document.getElementById('notFoundMessage').classList.remove('hidden');
+      return;
+    }
+
+    const matchedPerson = initialData[0];
+    let groupData = [];
+
+    if (matchedPerson.group_code) {
+      const response2 = await fetch(`${supabaseUrl}/rest/v1/${tableName}?select=*&group_code=eq.${encodeURIComponent(matchedPerson.group_code)}`, {
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      groupData = await response2.json();
+    } else {
+      groupData = [matchedPerson];
+    }
+
+    currentInvites = groupData;
+    document.getElementById('lookup').classList.add('hidden');
+    document.getElementById('rsvpForm').classList.remove('hidden');
+
+    const personList = document.getElementById('personList');
+    personList.innerHTML = '';
+
+    currentInvites.forEach((invite, index) => {
+      const block = document.createElement('div');
+      block.className = 'person-block';
+
+      block.innerHTML = `
+        <h3>${invite.name}</h3>
+        ${invite.rehearsal_invite ? `
+          <p>Welcome Party:</p>
+          <label><input type="radio" name="rehearsal_${index}" value="true" ${invite.attending_rehearsal === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="rehearsal_${index}" value="false" ${invite.attending_rehearsal === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.wedding_invite ? `
+          <p>Wedding:</p>
+          <label><input type="radio" name="wedding_${index}" value="true" ${invite.attending_wedding === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="wedding_${index}" value="false" ${invite.attending_wedding === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.after_party_invite ? `
+          <p>After Party:</p>
+          <label><input type="radio" name="after_${index}" value="true" ${invite.attending_after_party === true ? 'checked' : ''}> Yes</label>
+          <label><input type="radio" name="after_${index}" value="false" ${invite.attending_after_party === false ? 'checked' : ''}> No</label>
+        ` : ''}
+        ${invite.has_plus_one ? `
+          <div class="plus-one-wrapper">
+            <p>Plus One Name:</p>
+            <input type="text" id="plusOne_${index}" class="plus-one" value="${invite.plus_one_name || ''}" placeholder="Full Name">
+          </div>
+        ` : ''}
+      `;
+
+      personList.appendChild(block);
+    });
+
+  } catch (error) {
+    console.error('Lookup error:', error);
+    alert('Error looking up invite.');
+  }
+}
+
+async function submitRSVP(event) {
+  event.preventDefault();
+
+  try {
+    for (let i = 0; i < currentInvites.length; i++) {
+      const invite = currentInvites[i];
+
+      const updates = {
+        attending_rehearsal: null,
+        attending_wedding: null,
+        attending_after_party: null,
+        plus_one_name: null
+      };
+
+      if (invite.rehearsal_invite) {
+        const rehearsalAnswer = document.querySelector(`input[name="rehearsal_${i}"]:checked`)?.value;
+        updates.attending_rehearsal = rehearsalAnswer === 'true' ? true : (rehearsalAnswer === 'false' ? false : null);
+      }
+
+      if (invite.wedding_invite) {
+        const weddingAnswer = document.querySelector(`input[name="wedding_${i}"]:checked`)?.value;
+        updates.attending_wedding = weddingAnswer === 'true' ? true : (weddingAnswer === 'false' ? false : null);
+      }
+
+      if (invite.after_party_invite) {
+        const afterAnswer = document.querySelector(`input[name="after_${i}"]:checked`)?.value;
+        updates.attending_after_party = afterAnswer === 'true' ? true : (afterAnswer === 'false' ? false : null);
+      }
+
+      if (invite.has_plus_one) {
+        updates.plus_one_name = document.getElementById(`plusOne_${i}`).value.trim() || null;
+      }
+
+      await fetch(`${supabaseUrl}/rest/v1/${tableName}?id=eq.${invite.id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(updates)
+      });
+    }
+
+    document.getElementById('rsvpForm').classList.add('hidden');
+    document.getElementById('successMessage').classList.remove('hidden');
+  } catch (error) {
+    console.error('RSVP error:', error);
+    alert('Error submitting RSVP.');
+  }
+}
+
+function editRSVP() {
+  document.getElementById('successMessage').classList.add('hidden');
+  document.getElementById('rsvpForm').classList.remove('hidden');
+}
+
+function restartLookup() {
+  document.getElementById('notFoundMessage').classList.add('hidden');
+  document.getElementById('lookup').classList.remove('hidden');
+  document.getElementById('inviteCode').value = '';
+}
+</script>
 
 </body>
 </html>
