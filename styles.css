@@ -41,7 +41,7 @@ form {
 }
 
 .form-card {
-  background: white;
+  background: transparent;
   padding: 16px 24px 32px;
   max-width: 600px;
   margin: 8rem auto;
